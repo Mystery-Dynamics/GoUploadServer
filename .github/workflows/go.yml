@@ -29,6 +29,5 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: upload-server
-          tag: v
-          prerelease: true
-          draft: true
+          tag: v1.0.0
+          prerelease: false
