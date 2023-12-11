@@ -21,7 +21,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: upload-server
-          paths: upload-server
+          path: upload-server
 
   deploy:
     runs-on: ubuntu-latest
