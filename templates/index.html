@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>File Upload</title>
+</head>
+<body>
+	<h1>File Upload</h1>
+	<form action="/upload" method="post" enctype="multipart/form-data">
+		<label for="file">Select file:</label>
+		<input type="file" name="file" id="file">
+		<br>
+		<label for="secret">Secret Key:</label>
+		<input type="password" name="secret" id="secret">
+		<br>
+		<button type="submit">Upload</button>
+	</form>
+</body>
+</html>
