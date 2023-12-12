@@ -1,0 +1,43 @@
+name: Build and Deploy Golang Upload Server
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: Build
+        run: go build -o upload-server .
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: upload-server
+          path: upload-server
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: upload-server
+
+      - name: Upload server
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.MY_TOKEN }}
+          file: upload-server
+          tag: v1.0.0 # Update with your desired version
+          prerelease: false
