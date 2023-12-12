@@ -11,26 +11,31 @@ import (
 	"time"
 )
 
-const uploadDir = "static/uploads" // Directory to store uploaded files
+// const uploadDir = "static/uploads" // Directory to store uploaded files
+var uploadDir string
 
 func main() {
 	secretKey := flag.String("secret", "your_secret_key", "Secret key for upload")
+	pathUpload := flag.String("pathUpload", "static/uploads", "Path to upload")
+	pageUpload := flag.String("pageUpload", "/upload-page", "Path to upload")
 	port := flag.Int("port", 8088, "Port to listen on")
-	allowIndex := flag.Bool("allowIndex", false, "Port to listen on")
+	enableUploadPage := flag.Bool("enableUploadPage", false, "Port to listen on")
 	allowDownload := flag.Bool("allowDownload", true, "Port to listen on")
 	flag.Parse()
+	uploadDir = *pathUpload
 	// Create upload directory if it doesn't exist
 	err := os.MkdirAll(uploadDir, 0755)
 	if err != nil {
 		fmt.Printf("Error creating upload directory: %v", err)
 		return
 	}
-	if *allowIndex {
-		http.HandleFunc("/", indexHandler)
+	if *enableUploadPage {
+		http.HandleFunc(*pageUpload, uploadPageHandler)
 	}
 	if *allowDownload {
-		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static")))) // Serve static files
+		http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(uploadDir)))) // Serve static files
 	}
+	http.HandleFunc("/", indexHandler)
 	http.HandleFunc("/upload", uploadHandler(*secretKey))
 
 	fmt.Printf("Server listening on port %d\n", *port)
@@ -39,6 +44,15 @@ func main() {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("templates/index.html"))
+	err := tmpl.Execute(w, nil)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func uploadPageHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("templates/upload.html"))
 	err := tmpl.Execute(w, nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -89,7 +103,7 @@ func uploadHandler(secret string) http.HandlerFunc {
 			return
 		}
 
-		downloadURL := fmt.Sprintf("/static/uploads/%s", filename)
+		downloadURL := fmt.Sprintf("/static/%s", filename)
 
 		// Generate download link HTML
 		downloadLink := fmt.Sprintf("<p>Download file: </p><a href='%s'>%s</a>", downloadURL, downloadURL)
